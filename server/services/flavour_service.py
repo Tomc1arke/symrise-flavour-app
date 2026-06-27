@@ -214,3 +214,40 @@ def revise_flavor(flavor_id, data):
 
     finally:
         conn.close()
+
+def submit_flavor(flavor_id):
+    conn = get_db_connection()
+
+    try:
+        flavor = conn.execute("""
+            SELECT 
+                id,
+                state
+            FROM flavor
+            WHERE id = ?
+        """, (flavor_id,)).fetchone()
+
+        if flavor is None:
+            conn.close()
+            return None, "Flavor not found"
+
+        if flavor["state"] != "new":
+            conn.close()
+            return None, "Only new flavors can be submitted for review"
+
+        conn.execute("""
+            UPDATE flavor
+            SET state = 'submitted'
+            WHERE id = ?
+        """, (flavor_id,))
+
+        conn.commit()
+
+        return get_flavor_by_id(flavor_id), None
+
+    except Exception as error:
+        conn.rollback()
+        raise error
+
+    finally:
+        conn.close()

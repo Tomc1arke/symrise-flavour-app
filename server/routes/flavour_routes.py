@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from services.flavour_service import get_flavors, get_flavor_by_id, create_flavor, revise_flavor
+from services.flavour_service import get_flavors, get_flavor_by_id, create_flavor, revise_flavor, submit_flavor
 from services.validation_service import validate_flavor_ingredients
 
 flavour_routes = Blueprint("flavour_routes", __name__)
@@ -81,5 +81,24 @@ def revise_existing_flavor(flavor_id):
     except Exception as error:
         return jsonify({
             "error": "Failed to revise flavor",
+            "details": str(error)
+        }), 500
+    
+@flavour_routes.route("/api/flavors/<int:flavor_id>/submit", methods=["POST"])
+def submit_existing_flavor(flavor_id):
+    try:
+        submitted_flavor, error = submit_flavor(flavor_id)
+
+        if error == "Flavor not found":
+            return jsonify({"error": error}), 404
+
+        if error:
+            return jsonify({"error": error}), 400
+
+        return jsonify(submitted_flavor), 200
+
+    except Exception as error:
+        return jsonify({
+            "error": "Failed to submit flavor",
             "details": str(error)
         }), 500
