@@ -3,6 +3,7 @@ from flask_cors import CORS
 
 from routes.ingredient_routes import ingredient_routes
 from routes.auth_routes import auth_routes
+from routes.flavour_routes import flavour_routes
 
 
 def create_app():
@@ -11,6 +12,7 @@ def create_app():
 
     app.register_blueprint(ingredient_routes)
     app.register_blueprint(auth_routes)
+    app.register_blueprint(flavour_routes)
 
     @app.route("/api/health", methods=["GET"])
     def health_check():
