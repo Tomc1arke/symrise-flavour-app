@@ -139,3 +139,78 @@ def create_flavor(data):
 
     finally:
         conn.close()
+
+def revise_flavor(flavor_id, data):
+    conn = get_db_connection()
+
+    try:
+        existing_flavor = conn.execute("""
+            SELECT 
+                id,
+                name,
+                label,
+                description,
+                created_by_id,
+                state,
+                version
+            FROM flavor
+            WHERE id = ?
+        """, (flavor_id,)).fetchone()
+
+        if existing_flavor is None:
+            conn.close()
+            return None, "Flavor not found"
+
+        if existing_flavor["state"] in ["submitted", "approved"]:
+            conn.close()
+            return None, "Submitted or approved flavors cannot be revised"
+
+        new_version = existing_flavor["version"] + 1
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO flavor (
+                name,
+                label,
+                description,
+                created_by_id,
+                approved_by_id,
+                state,
+                version
+            )
+            VALUES (?, ?, ?, ?, NULL, 'new', ?)
+        """, (
+            existing_flavor["name"],
+            data.get("label", existing_flavor["label"]),
+            data.get("description", existing_flavor["description"]),
+            existing_flavor["created_by_id"],
+            new_version
+        ))
+
+        new_flavor_id = cursor.lastrowid
+
+        for ingredient in data["ingredients"]:
+            cursor.execute("""
+                INSERT INTO flavor_ingredient_map (
+                    flavor_id,
+                    ingredient_id,
+                    percent
+                )
+                VALUES (?, ?, ?)
+            """, (
+                new_flavor_id,
+                ingredient["ingredientId"],
+                ingredient["percent"]
+            ))
+
+        conn.commit()
+
+        return get_flavor_by_id(new_flavor_id), None
+
+    except Exception as error:
+        conn.rollback()
+        raise error
+
+    finally:
+        conn.close()
