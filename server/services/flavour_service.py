@@ -251,3 +251,104 @@ def submit_flavor(flavor_id):
 
     finally:
         conn.close()
+
+def user_has_role(user_id, required_role):
+    conn = get_db_connection()
+
+    user = conn.execute("""
+        SELECT 
+            u.id,
+            ur.name AS role
+        FROM user u
+        JOIN user_role_map urm ON u.id = urm.user_id
+        JOIN user_role ur ON urm.user_role_id = ur.id
+        WHERE u.id = ?
+    """, (user_id,)).fetchone()
+
+    conn.close()
+
+    if user is None:
+        return False
+
+    return user["role"].lower() == required_role.lower()
+
+
+def approve_flavor(flavor_id, flavorist_id):
+    conn = get_db_connection()
+
+    try:
+        flavor = conn.execute("""
+            SELECT id, state
+            FROM flavor
+            WHERE id = ?
+        """, (flavor_id,)).fetchone()
+
+        if flavor is None:
+            conn.close()
+            return None, "Flavor not found"
+
+        if not user_has_role(flavorist_id, "flavorist"):
+            conn.close()
+            return None, "Only flavorists can approve flavors"
+
+        if flavor["state"] != "submitted":
+            conn.close()
+            return None, "Only submitted flavors can be approved"
+
+        conn.execute("""
+            UPDATE flavor
+            SET state = 'approved',
+                approved_by_id = ?
+            WHERE id = ?
+        """, (flavorist_id, flavor_id))
+
+        conn.commit()
+
+        return get_flavor_by_id(flavor_id), None
+
+    except Exception as error:
+        conn.rollback()
+        raise error
+
+    finally:
+        conn.close()
+
+
+def reject_flavor(flavor_id, flavorist_id):
+    conn = get_db_connection()
+
+    try:
+        flavor = conn.execute("""
+            SELECT id, state
+            FROM flavor
+            WHERE id = ?
+        """, (flavor_id,)).fetchone()
+
+        if flavor is None:
+            conn.close()
+            return None, "Flavor not found"
+
+        if not user_has_role(flavorist_id, "flavorist"):
+            conn.close()
+            return None, "Only flavorists can reject flavors"
+
+        if flavor["state"] != "submitted":
+            conn.close()
+            return None, "Only submitted flavors can be rejected"
+
+        conn.execute("""
+            UPDATE flavor
+            SET state = 'rejected'
+            WHERE id = ?
+        """, (flavor_id,))
+
+        conn.commit()
+
+        return get_flavor_by_id(flavor_id), None
+
+    except Exception as error:
+        conn.rollback()
+        raise error
+
+    finally:
+        conn.close()

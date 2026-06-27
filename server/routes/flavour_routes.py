@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from services.flavour_service import get_flavors, get_flavor_by_id, create_flavor, revise_flavor, submit_flavor
+from services.flavour_service import get_flavors, get_flavor_by_id, create_flavor, revise_flavor, submit_flavor, approve_flavor, reject_flavor
 from services.validation_service import validate_flavor_ingredients
 
 flavour_routes = Blueprint("flavour_routes", __name__)
@@ -100,5 +100,54 @@ def submit_existing_flavor(flavor_id):
     except Exception as error:
         return jsonify({
             "error": "Failed to submit flavor",
+            "details": str(error)
+        }), 500
+    
+@flavour_routes.route("/api/flavors/<int:flavor_id>/approve", methods=["POST"])
+def approve_submitted_flavor(flavor_id):
+    data = request.get_json()
+
+    if not data or "flavoristId" not in data:
+        return jsonify({"error": "flavoristId is required"}), 400
+
+    try:
+        approved_flavor, error = approve_flavor(flavor_id, data["flavoristId"])
+
+        if error == "Flavor not found":
+            return jsonify({"error": error}), 404
+
+        if error:
+            return jsonify({"error": error}), 400
+
+        return jsonify(approved_flavor), 200
+
+    except Exception as error:
+        return jsonify({
+            "error": "Failed to approve flavor",
+            "details": str(error)
+        }), 500
+
+
+@flavour_routes.route("/api/flavors/<int:flavor_id>/reject", methods=["POST"])
+def reject_submitted_flavor(flavor_id):
+    data = request.get_json()
+
+    if not data or "flavoristId" not in data:
+        return jsonify({"error": "flavoristId is required"}), 400
+
+    try:
+        rejected_flavor, error = reject_flavor(flavor_id, data["flavoristId"])
+
+        if error == "Flavor not found":
+            return jsonify({"error": error}), 404
+
+        if error:
+            return jsonify({"error": error}), 400
+
+        return jsonify(rejected_flavor), 200
+
+    except Exception as error:
+        return jsonify({
+            "error": "Failed to reject flavor",
             "details": str(error)
         }), 500
