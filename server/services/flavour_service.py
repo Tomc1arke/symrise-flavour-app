@@ -88,3 +88,54 @@ def get_flavor_by_id(flavor_id):
     flavor_dict["ingredients"] = [dict(row) for row in ingredients]
 
     return flavor_dict
+
+def create_flavor(data):
+    conn = get_db_connection()
+
+    try:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO flavor (
+                name,
+                label,
+                description,
+                created_by_id,
+                approved_by_id,
+                state,
+                version
+            )
+            VALUES (?, ?, ?, ?, NULL, 'new', 0)
+        """, (
+            data["name"],
+            data.get("label"),
+            data.get("description"),
+            data["createdById"]
+        ))
+
+        flavor_id = cursor.lastrowid
+
+        for ingredient in data["ingredients"]:
+            cursor.execute("""
+                INSERT INTO flavor_ingredient_map (
+                    flavor_id,
+                    ingredient_id,
+                    percent
+                )
+                VALUES (?, ?, ?)
+            """, (
+                flavor_id,
+                ingredient["ingredientId"],
+                ingredient["percent"]
+            ))
+
+        conn.commit()
+
+        return get_flavor_by_id(flavor_id)
+
+    except Exception as error:
+        conn.rollback()
+        raise error
+
+    finally:
+        conn.close()
