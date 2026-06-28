@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from services.flavour_service import get_flavors, get_flavor_by_id, create_flavor, revise_flavor, submit_flavor, approve_flavor, reject_flavor
+from services.flavour_service import get_flavors, get_flavor_by_id, create_flavor, revise_flavor, submit_flavor, approve_flavor, reject_flavor, get_comments_for_flavor, add_comment_to_flavor
 from services.validation_service import validate_flavor_ingredients
 
 flavour_routes = Blueprint("flavour_routes", __name__)
@@ -149,5 +149,35 @@ def reject_submitted_flavor(flavor_id):
     except Exception as error:
         return jsonify({
             "error": "Failed to reject flavor",
+            "details": str(error)
+        }), 500
+    
+@flavour_routes.route("/api/flavors/<int:flavor_id>/comments", methods=["GET"])
+def list_flavor_comments(flavor_id):
+    comments = get_comments_for_flavor(flavor_id)
+    return jsonify(comments), 200
+
+
+@flavour_routes.route("/api/flavors/<int:flavor_id>/comments", methods=["POST"])
+def create_flavor_comment(flavor_id):
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Request body is required"}), 400
+
+    try:
+        comment, error = add_comment_to_flavor(flavor_id, data)
+
+        if error == "Flavor not found":
+            return jsonify({"error": error}), 404
+
+        if error:
+            return jsonify({"error": error}), 400
+
+        return jsonify(comment), 201
+
+    except Exception as error:
+        return jsonify({
+            "error": "Failed to add comment",
             "details": str(error)
         }), 500

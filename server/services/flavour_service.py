@@ -86,6 +86,7 @@ def get_flavor_by_id(flavor_id):
 
     flavor_dict = dict(flavor)
     flavor_dict["ingredients"] = [dict(row) for row in ingredients]
+    flavor_dict["comments"] = get_comments_for_flavor(flavor_id)
 
     return flavor_dict
 
@@ -345,6 +346,103 @@ def reject_flavor(flavor_id, flavorist_id):
         conn.commit()
 
         return get_flavor_by_id(flavor_id), None
+
+    except Exception as error:
+        conn.rollback()
+        raise error
+
+    finally:
+        conn.close()
+
+def get_comments_for_flavor(flavor_id):
+    conn = get_db_connection()
+
+    comments = conn.execute("""
+        SELECT
+            c.id,
+            c.text,
+            c.flavor_id,
+            c.created_by_id,
+            c.created_at,
+            u.first_name || ' ' || u.last_name AS created_by_name
+        FROM comment c
+        LEFT JOIN user u ON c.created_by_id = u.id
+        WHERE c.flavor_id = ?
+        ORDER BY c.created_at ASC
+    """, (flavor_id,)).fetchall()
+
+    conn.close()
+
+    return [dict(row) for row in comments]
+
+
+def add_comment_to_flavor(flavor_id, data):
+    conn = get_db_connection()
+
+    try:
+        flavor = conn.execute("""
+            SELECT id, state
+            FROM flavor
+            WHERE id = ?
+        """, (flavor_id,)).fetchone()
+
+        if flavor is None:
+            conn.close()
+            return None, "Flavor not found"
+
+        if flavor["state"] != "submitted":
+            conn.close()
+            return None, "Comments can only be added to submitted flavors"
+
+        created_by_id = data.get("createdById")
+        text = data.get("text")
+
+        if not created_by_id:
+            conn.close()
+            return None, "createdById is required"
+
+        if not text or not text.strip():
+            conn.close()
+            return None, "Comment text is required"
+
+        if not user_has_role(created_by_id, "flavorist"):
+            conn.close()
+            return None, "Only flavorists can comment on submitted flavors"
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO comment (
+                text,
+                flavor_id,
+                created_by_id,
+                created_at
+            )
+            VALUES (?, ?, ?, datetime('now'))
+        """, (
+            text.strip(),
+            flavor_id,
+            created_by_id
+        ))
+
+        comment_id = cursor.lastrowid
+
+        conn.commit()
+
+        comment = conn.execute("""
+            SELECT
+                c.id,
+                c.text,
+                c.flavor_id,
+                c.created_by_id,
+                c.created_at,
+                u.first_name || ' ' || u.last_name AS created_by_name
+            FROM comment c
+            LEFT JOIN user u ON c.created_by_id = u.id
+            WHERE c.id = ?
+        """, (comment_id,)).fetchone()
+
+        return dict(comment), None
 
     except Exception as error:
         conn.rollback()
