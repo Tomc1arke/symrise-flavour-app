@@ -185,3 +185,42 @@ button:disabled {
   color: #64748b;
   font-size: 14px;
 }
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.review-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.review-card h3 {
+  margin-top: 0;
+}
+
+.comment-box {
+  margin-top: 16px;
+}
+
+.comment-box textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.action-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
