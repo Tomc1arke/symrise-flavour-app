@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getFlavorById } from "../api/flavourApi";
 
-function FlavorDetail({ flavorId, onClose }) {
+function FlavorDetail({ flavorId, onClose, onRevise }) {
   const [flavor, setFlavor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -31,9 +31,18 @@ function FlavorDetail({ flavorId, onClose }) {
     <div className="panel">
       <div className="panel-header">
         <h2>Flavor Details</h2>
-        <button type="button" className="secondary-button" onClick={onClose}>
-          Close
-        </button>
+
+        <div className="action-row">
+          {flavor && (flavor.state === "new" || flavor.state === "rejected") && (
+            <button type="button" onClick={() => onRevise(flavor)}>
+              Revise Flavor
+            </button>
+          )}
+
+          <button type="button" className="secondary-button" onClick={onClose}>
+            Close
+          </button>
+        </div>
       </div>
 
       {loading && <p>Loading flavor details...</p>}

@@ -9,6 +9,7 @@ function CustomerDashboard({ user, onLogout }) {
   const [error, setError] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedFlavorId, setSelectedFlavorId] = useState(null);
+  const [flavorBeingRevised, setFlavorBeingRevised] = useState(null);
 
   async function loadFlavors() {
     try {
@@ -28,7 +29,15 @@ function CustomerDashboard({ user, onLogout }) {
 
   function handleFlavorCreated() {
     setShowCreateForm(false);
+    setFlavorBeingRevised(null);
+    setSelectedFlavorId(null);
     loadFlavors();
+  }
+
+  function handleStartRevise(flavor) {
+    setFlavorBeingRevised(flavor);
+    setShowCreateForm(false);
+    setSelectedFlavorId(null);
   }
 
   async function handleSubmitFlavor(flavorId) {
@@ -63,17 +72,35 @@ function CustomerDashboard({ user, onLogout }) {
           />
         )}
 
+        {flavorBeingRevised && (
+          <FlavorForm
+            user={user}
+            mode="revise"
+            initialFlavor={flavorBeingRevised}
+            onFlavorCreated={handleFlavorCreated}
+            onCancel={() => setFlavorBeingRevised(null)}
+          />
+        )}
+
         {selectedFlavorId && (
           <FlavorDetail
             flavorId={selectedFlavorId}
             onClose={() => setSelectedFlavorId(null)}
+            onRevise={handleStartRevise}
           />
         )}
 
         <div className="panel">
           <div className="panel-header">
             <h2>Your Flavors</h2>
-            <button type="button" onClick={() => setShowCreateForm(true)}>
+            <button
+              type="button"
+              onClick={() => {
+                setShowCreateForm(true);
+                setFlavorBeingRevised(null);
+                setSelectedFlavorId(null);
+              }}
+            >
               Create New Flavor
             </button>
           </div>

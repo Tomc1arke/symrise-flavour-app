@@ -1,15 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { getIngredients } from "../api/ingredientApi";
-import { createFlavor } from "../api/flavourApi";
+import { createFlavor, reviseFlavor } from "../api/flavourApi";
 
-function FlavorForm({ user, onFlavorCreated, onCancel }) {
+function FlavorForm({
+  user,
+  onFlavorCreated,
+  onCancel,
+  initialFlavor = null,
+  mode = "create",
+}) {
   const [ingredients, setIngredients] = useState([]);
-  const [name, setName] = useState("");
-  const [label, setLabel] = useState("");
-  const [description, setDescription] = useState("");
-  const [selectedIngredients, setSelectedIngredients] = useState([
-    { ingredientId: "", percent: 0.2 },
-  ]);
+
+  const [name, setName] = useState(initialFlavor?.name || "");
+  const [label, setLabel] = useState(initialFlavor?.label || "");
+  const [description, setDescription] = useState(initialFlavor?.description || "");
+  const [selectedIngredients, setSelectedIngredients] = useState(
+    initialFlavor?.ingredients?.length
+      ? initialFlavor.ingredients.map((ingredient) => ({
+          ingredientId: ingredient.ingredient_id,
+          percent: ingredient.percent,
+        }))
+      : [{ ingredientId: "", percent: 0.2 }]
+    );
+  
   const [error, setError] = useState("");
   const [loadingIngredients, setLoadingIngredients] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -123,7 +136,13 @@ function FlavorForm({ user, onFlavorCreated, onCancel }) {
 
     try {
       setSubmitting(true);
-      await createFlavor(flavorData);
+
+      if (mode === "revise" && initialFlavor) {
+        await reviseFlavor(initialFlavor.id, flavorData);
+      } else {
+        await createFlavor(flavorData);
+      }
+
       onFlavorCreated();
     } catch (error) {
       setError(error.message);
@@ -135,7 +154,7 @@ function FlavorForm({ user, onFlavorCreated, onCancel }) {
   return (
     <div className="panel">
       <div className="panel-header">
-        <h2>Create New Flavor</h2>
+        <h2>{mode === "revise" ? "Revise Flavor" : "Create New Flavor"}</h2>
         <button type="button" className="secondary-button" onClick={onCancel}>
           Cancel
         </button>
@@ -237,7 +256,13 @@ function FlavorForm({ user, onFlavorCreated, onCancel }) {
           {error && <p className="error">{error}</p>}
 
           <button type="submit" disabled={submitting}>
-            {submitting ? "Creating..." : "Create Flavor"}
+            {submitting
+              ? mode === "revise"
+                ? "Saving Revision..."
+                : "Creating..."
+              : mode === "revise"
+                ? "Save Revision"
+                : "Create Flavor"}
           </button>
         </form>
       )}
