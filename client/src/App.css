@@ -132,3 +132,51 @@ th {
   background: #fee2e2;
   color: #991b1b;
 }
+
+.flavor-form {
+  margin-top: 16px;
+}
+
+textarea {
+  min-height: 90px;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+  resize: vertical;
+}
+
+select {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+
+.ingredient-row {
+  display: grid;
+  grid-template-columns: 1fr 120px auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.secondary-button {
+  background: #64748b;
+}
+
+.secondary-button:hover {
+  background: #475569;
+}
+
+.danger-button {
+  background: #dc2626;
+}
+
+.danger-button:hover {
+  background: #b91c1c;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

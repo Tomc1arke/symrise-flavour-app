@@ -13,3 +13,25 @@ export async function getCustomerFlavors(userId) {
 
   return data;
 }
+
+export async function createFlavor(flavorData) {
+  const response = await fetch(`${API_BASE_URL}/flavors`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(flavorData),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    if (data.errors) {
+      throw new Error(data.errors.join(" "));
+    }
+
+    throw new Error(data.error || "Failed to create flavor");
+  }
+
+  return data;
+}

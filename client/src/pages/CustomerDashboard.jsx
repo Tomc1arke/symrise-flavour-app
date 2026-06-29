@@ -1,25 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { getCustomerFlavors } from "../api/flavourApi";
+import FlavorForm from "../components/FlavorForm";
 
 function CustomerDashboard({ user, onLogout }) {
   const [flavors, setFlavors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+
+  async function loadFlavors() {
+    try {
+      setLoading(true);
+      const data = await getCustomerFlavors(user.id);
+      setFlavors(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function loadFlavors() {
-      try {
-        const data = await getCustomerFlavors(user.id);
-        setFlavors(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     loadFlavors();
   }, [user.id]);
+
+  function handleFlavorCreated() {
+    setShowCreateForm(false);
+    loadFlavors();
+  }
 
   return (
     <main className="page">
@@ -35,10 +43,20 @@ function CustomerDashboard({ user, onLogout }) {
           <button onClick={onLogout}>Logout</button>
         </div>
 
+        {showCreateForm && (
+          <FlavorForm
+            user={user}
+            onFlavorCreated={handleFlavorCreated}
+            onCancel={() => setShowCreateForm(false)}
+          />
+        )}
+
         <div className="panel">
           <div className="panel-header">
             <h2>Your Flavors</h2>
-            <button type="button">Create New Flavor</button>
+            <button type="button" onClick={() => setShowCreateForm(true)}>
+              Create New Flavor
+            </button>
           </div>
 
           {loading && <p>Loading flavors...</p>}
