@@ -118,3 +118,15 @@ export async function addFlavorComment(flavorId, createdById, text) {
 
   return data;
 }
+
+export async function getFlavorById(flavorId) {
+  const response = await fetch(`${API_BASE_URL}/flavors/${flavorId}`);
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Failed to load flavor details");
+  }
+
+  return data;
+}

@@ -224,3 +224,36 @@ button:disabled {
   gap: 12px;
   margin-top: 16px;
 }
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comment-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.comment-card p {
+  margin-top: 0;
+}
+
+.comment-card small {
+  color: #64748b;
+}

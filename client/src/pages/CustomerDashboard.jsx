@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { getCustomerFlavors, submitFlavor } from "../api/flavourApi";
 import FlavorForm from "../components/FlavorForm";
+import FlavorDetail from "../components/FlavorDetail";
 
 function CustomerDashboard({ user, onLogout }) {
   const [flavors, setFlavors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedFlavorId, setSelectedFlavorId] = useState(null);
 
   async function loadFlavors() {
     try {
@@ -61,6 +63,13 @@ function CustomerDashboard({ user, onLogout }) {
           />
         )}
 
+        {selectedFlavorId && (
+          <FlavorDetail
+            flavorId={selectedFlavorId}
+            onClose={() => setSelectedFlavorId(null)}
+          />
+        )}
+
         <div className="panel">
           <div className="panel-header">
             <h2>Your Flavors</h2>
@@ -102,13 +111,19 @@ function CustomerDashboard({ user, onLogout }) {
                     </td>
                     <td>{flavor.description}</td>
                     <td>
-                      {flavor.state === "new" ? (
-                        <button type="button" onClick={() => handleSubmitFlavor(flavor.id)}>
-                          Submit for Review
+                      <div className="action-row">
+                        <button type="button" onClick={() => setSelectedFlavorId(flavor.id)}>
+                          View Details
                         </button>
-                      ) : (
-                        <span className="muted">No actions</span>
-                      )}
+
+                        {flavor.state === "new" ? (
+                          <button type="button" onClick={() => handleSubmitFlavor(flavor.id)}>
+                            Submit for Review
+                          </button>
+                        ) : (
+                          <span className="muted">No submit action</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
