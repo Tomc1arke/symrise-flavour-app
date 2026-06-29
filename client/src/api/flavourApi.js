@@ -35,3 +35,17 @@ export async function createFlavor(flavorData) {
 
   return data;
 }
+
+export async function submitFlavor(flavorId) {
+  const response = await fetch(`${API_BASE_URL}/flavors/${flavorId}/submit`, {
+    method: "POST",
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Failed to submit flavor");
+  }
+
+  return data;
+}

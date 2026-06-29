@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getCustomerFlavors } from "../api/flavourApi";
+import { getCustomerFlavors, submitFlavor } from "../api/flavourApi";
 import FlavorForm from "../components/FlavorForm";
 
 function CustomerDashboard({ user, onLogout }) {
@@ -27,6 +27,16 @@ function CustomerDashboard({ user, onLogout }) {
   function handleFlavorCreated() {
     setShowCreateForm(false);
     loadFlavors();
+  }
+
+  async function handleSubmitFlavor(flavorId) {
+  try {
+      setError("");
+      await submitFlavor(flavorId);
+      loadFlavors();
+    } catch (error) {
+      setError(error.message);
+    }
   }
 
   return (
@@ -76,6 +86,7 @@ function CustomerDashboard({ user, onLogout }) {
                   <th>Version</th>
                   <th>State</th>
                   <th>Description</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -90,6 +101,15 @@ function CustomerDashboard({ user, onLogout }) {
                       </span>
                     </td>
                     <td>{flavor.description}</td>
+                    <td>
+                      {flavor.state === "new" ? (
+                        <button type="button" onClick={() => handleSubmitFlavor(flavor.id)}>
+                          Submit for Review
+                        </button>
+                      ) : (
+                        <span className="muted">No actions</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
