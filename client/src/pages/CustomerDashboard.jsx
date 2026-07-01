@@ -188,7 +188,7 @@ function CustomerDashboard({ user, onLogout }) {
                             Submit for Review
                           </button>
                         ) : (
-                          <span className="muted">No submit action</span>
+                          <span className="muted">Submitted / Awaiting review</span>
                         )}
                       </div>
                     </td>

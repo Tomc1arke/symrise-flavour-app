@@ -83,7 +83,7 @@ function FlavoristDashboard({ user, onLogout }) {
       <section className="dashboard">
         <div className="dashboard-header">
           <div>
-            <h1>Flavorist Dashboard</h1>
+            <h1>Review Submitted Flavors</h1>
             <p>
               Welcome, {user.firstName} {user.lastName}
             </p>

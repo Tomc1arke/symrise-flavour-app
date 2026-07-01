@@ -64,8 +64,8 @@ function Login({ onLogin }) {
         </form>
 
         <div className="hint">
-          <p><strong>Customer:</strong> rpatel@example.com / password</p>
-          <p><strong>Flavorist:</strong> jdupont@example.com / password</p>
+          <p><strong>Demo Customer:</strong> rpatel@example.com / password</p>
+          <p><strong>Demo Flavorist:</strong> jdupont@example.com / password</p>
         </div>
       </section>
     </main>
