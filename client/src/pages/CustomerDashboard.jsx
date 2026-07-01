@@ -11,6 +11,18 @@ function CustomerDashboard({ user, onLogout }) {
   const [selectedFlavorId, setSelectedFlavorId] = useState(null);
   const [flavorBeingRevised, setFlavorBeingRevised] = useState(null);
 
+  const submittedCount = flavors.filter(
+    (flavor) => flavor.state === "submitted"
+  ).length;
+
+  const approvedCount = flavors.filter(
+    (flavor) => flavor.state === "approved"
+  ).length;
+
+  const rejectedCount = flavors.filter(
+    (flavor) => flavor.state === "rejected"
+  ).length;
+
   async function loadFlavors() {
     try {
       setLoading(true);
@@ -89,6 +101,34 @@ function CustomerDashboard({ user, onLogout }) {
             onRevise={handleStartRevise}
           />
         )}
+
+        <div className="notification-panel">
+          <h2>Notifications</h2>
+
+          {submittedCount === 0 && approvedCount === 0 && rejectedCount === 0 ? (
+            <p>No flavor updates at the moment.</p>
+          ) : (
+            <ul>
+              {submittedCount > 0 && (
+                <li>
+                  {submittedCount} flavor{submittedCount === 1 ? "" : "s"} under review.
+                </li>
+              )}
+
+              {approvedCount > 0 && (
+                <li>
+                  {approvedCount} flavor{approvedCount === 1 ? "" : "s"} approved.
+                </li>
+              )}
+
+              {rejectedCount > 0 && (
+                <li>
+                  {rejectedCount} flavor{rejectedCount === 1 ? "" : "s"} rejected and ready to revise.
+                </li>
+              )}
+            </ul>
+          )}
+        </div>
 
         <div className="panel">
           <div className="panel-header">

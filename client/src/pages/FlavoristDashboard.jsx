@@ -11,6 +11,7 @@ function FlavoristDashboard({ user, onLogout }) {
   const [commentTextByFlavorId, setCommentTextByFlavorId] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const submittedCount = flavors.length;
 
   async function loadSubmittedFlavors() {
     try {
@@ -89,6 +90,19 @@ function FlavoristDashboard({ user, onLogout }) {
           </div>
 
           <button onClick={onLogout}>Logout</button>
+        </div>
+
+        <div className="notification-panel">
+          <h2>Notifications</h2>
+
+          {submittedCount === 0 ? (
+            <p>No submitted flavors awaiting review.</p>
+          ) : (
+            <p>
+              You have {submittedCount} submitted flavor
+              {submittedCount === 1 ? "" : "s"} awaiting review.
+            </p>
+          )}
         </div>
 
         <div className="panel">
